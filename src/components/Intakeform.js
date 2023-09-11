@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { useNavigate } from 'react-router-dom'; // Import useHistory
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 
 function Intakeform() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
       alienRegistrationNumber: '',
       countryOfBirth: '',
       regionOfBirth: '',
       countryOfCitizenship: '',
       areYouInUS: 'No',
-      dateOfLastArrival: '',
+      dateOfLastArrival: null,
       i94ArrivalDepartureRecordNumber: '',
       passportOrTravelDocumentNumber: '',
       datePassportOrTravelDocumentIssued: null,
       datePassportOrTravelDocumentExpires: null,
       passportOrTravelDocumentCountryOfIssuance: '',
       currentNonimmigrantStatus: '',
-      dateStatusExpires: '',
+      dateStatusExpires: null,
       sevisNumber: '',
       eadNumber: '',
       StreetNumberUS: '',
@@ -81,17 +82,29 @@ function Intakeform() {
         setFormData({ ...formData, [name]: updatedCheckboxes });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Send formData to the backend
-        console.log(formData);
-      };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const cleanedFormData = { ...formData }; // handledate being left empty
+        for (const key in cleanedFormData) {
+          if (cleanedFormData[key] === null) {
+            delete cleanedFormData[key];
+          }
+        }
+        // Send the JSON data to the Express backend running on port 3001
+        const response = await axios.post('http://localhost:3001/api/submitForm', formData);
+        console.log(response.data); // You can log the response from the server
+        navigate('/review');
+      } catch (error) {
+        console.error('Error submitting form:', error);
+      }
+    };
   
     return (
       <div className="container mx-auto mt-10 p-4 bg-slate-200 rounded-lg">
         <h1 className="text-2xl font-semibold mb-2">Part 3. Beneficiary Information</h1>
         <h2 className="text-base font-semibold mb-3"> (Information about the beneficiary/beneficiaries you are filing for. Complete the blocks below. Use the Attachment-1 sheet to name each beneficiary included in this petition.) (continued)</h2>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit = {handleSubmit}>
           <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
             <div className="flex-1">
               <label htmlFor="alienRegistrationNumber" className="block text-sm font-medium text-gray-700">
@@ -103,6 +116,7 @@ function Intakeform() {
                 id="alienRegistrationNumber"
                 value={formData.alienRegistrationNumber}
                 onChange={handleChange}
+                required
                 maxLength="9"
                 className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               />
@@ -116,6 +130,7 @@ function Intakeform() {
                 id="countryOfBirth"
                 value={formData.countryOfBirth}
                 onChange={handleChange}
+                required
                 className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               >
                 <option value="">Select a country</option>
@@ -138,6 +153,7 @@ function Intakeform() {
                 id="regionOfBirth"
                 value={formData.regionOfBirth}
                 onChange={handleChange}
+                required
                 className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -150,6 +166,7 @@ function Intakeform() {
                 id="countryOfCitizenship"
                 value={formData.countryOfCitizenship}
                 onChange={handleChange}
+                required
                 className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               >
                 <option value="">Select a country</option>
@@ -189,6 +206,7 @@ function Intakeform() {
                     name="dateOfLastArrival"
                     id="dateOfLastArrival"
                     onChange={(date) => handleDateChange('dateOfLastArrival', date)}
+                    required={formData.areYouInUS === 'Yes'}
                     dateFormat="MM/dd/yyyy"
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   />
@@ -203,6 +221,7 @@ function Intakeform() {
                     id="i94ArrivalDepartureRecordNumber"
                     value={formData.i94ArrivalDepartureRecordNumber}
                     onChange={handleChange}
+                    required={formData.areYouInUS === 'Yes'}
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   />
                 </div>
@@ -218,6 +237,7 @@ function Intakeform() {
                     id="passportOrTravelDocumentNumber"
                     value={formData.passportOrTravelDocumentNumber}
                     onChange={handleChange}
+                    required={formData.areYouInUS === 'Yes'}
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   />
                 </div>
@@ -230,6 +250,7 @@ function Intakeform() {
                     name="datePassportOrTravelDocumentIssued"
                     id="datePassportOrTravelDocumentIssued"
                     onChange={(date) => handleDateChange('datePassportOrTravelDocumentIssued', date)}
+                    required={formData.areYouInUS === 'Yes'}
                     dateFormat="MM/dd/yyyy"
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   />
@@ -248,6 +269,7 @@ function Intakeform() {
                     name="datePassportOrTravelDocumentExpires"
                     id="datePassportOrTravelDocumentExpires"
                     onChange={(date) => handleDateChange('datePassportOrTravelDocumentExpires', date)}
+                    required={formData.areYouInUS === 'Yes'}
                     dateFormat="MM/dd/yyyy"
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   />
@@ -265,6 +287,7 @@ function Intakeform() {
                     id="passportOrTravelDocumentCountryOfIssuance"
                     value={formData.passportOrTravelDocumentCountryOfIssuance}
                     onChange={handleChange}
+                    required={formData.areYouInUS === 'Yes'}
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   />
                 </div>
@@ -280,6 +303,7 @@ function Intakeform() {
                     id="currentNonimmigrantStatus"
                     value={formData.currentNonimmigrantStatus}
                     onChange={handleChange}
+                    required={formData.areYouInUS === 'Yes'}
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   />
                 </div>
@@ -287,12 +311,13 @@ function Intakeform() {
                   <label htmlFor="dateStatusExpires" className="block text-sm font-medium text-gray-700">
                     Date Status Expires or D/S (mm/dd/yyyy):
                   </label>
-                  <input
-                    type="text"
+                  <DatePicker
+                    selected={formData.dateStatusExpires}
                     name="dateStatusExpires"
                     id="dateStatusExpires"
-                    value={formData.dateStatusExpires}
-                    onChange={handleChange}
+                    onChange={(date) => handleDateChange('dateStatusExpires', date)}
+                    required={formData.areYouInUS === 'Yes'}
+                    dateFormat="MM/dd/yyyy"
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   />
                 </div>
@@ -307,6 +332,7 @@ function Intakeform() {
                   id="sevisNumber"
                   value={formData.sevisNumber}
                   onChange={handleChange}
+                  required={formData.areYouInUS === 'Yes'}
                   className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 />
               </div>
@@ -320,6 +346,7 @@ function Intakeform() {
                   id="eadNumber"
                   value={formData.eadNumber}
                   onChange={handleChange}
+                  required={formData.areYouInUS === 'Yes'}
                   className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 />
               </div>
@@ -343,13 +370,14 @@ function Intakeform() {
                 </div>
                 {/* Number */}
                 <div className="flex-1">
-                    <label htmlFor="number" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="numberUS" className="block text-sm font-medium text-gray-700">
                     Number:
                     </label>
                     <input
                     type="text"
-                    name="number"
-                    id="number"
+                    name="numberUS"
+                    id="numberUS"
+                    onChange={handleChange}
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                     />
                 </div>
@@ -449,6 +477,7 @@ function Intakeform() {
               id="processingInfoOfficeAddress"
               value={formData.processingInfoOfficeAddress}
               onChange={handleChange}
+              required
               className="mt-1  focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
             />
           </div>
@@ -460,6 +489,7 @@ function Intakeform() {
               id="processingInfoStateOrCountry"
               value={formData.processingInfoStateOrCountry}
               onChange={handleChange}
+              required
               className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
             />
           </div>
@@ -470,7 +500,7 @@ function Intakeform() {
             {/* Street Number and Name */}
             <div className="flex-1">
                     <label htmlFor="foreignAddressStreetNumber" className="block text-sm font-medium text-gray-700">
-                    Street Number:
+                    Street Number and Name:
                     </label>
                     <input
                     type="text"
@@ -478,6 +508,7 @@ function Intakeform() {
                     id="foreignAddressStreetNumber"
                     value={formData.streetNumberForeign}
                     onChange={handleChange}
+                    required
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                     />
                 </div>
@@ -490,6 +521,8 @@ function Intakeform() {
                     type="text"
                     name="foreignAddressNumber"
                     id="foreignAddressNumber"
+                    onChange={handleChange}
+                    required
                     className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                     />
                 </div>
@@ -503,6 +536,7 @@ function Intakeform() {
                 id="foreignAddressCityOrTown"
                 value={formData.foreignAddressCityOrTown}
                 onChange={handleChange}
+                required
                 className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -514,6 +548,7 @@ function Intakeform() {
                 id="foreignAddressState"
                 value={formData.foreignAddressState}
                 onChange={handleChange}
+                required
                 className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -527,6 +562,7 @@ function Intakeform() {
                 id="foreignAddressPostalCode"
                 value={formData.foreignAddressPostalCode}
                 onChange={handleChange}
+                required
                 className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -539,6 +575,7 @@ function Intakeform() {
                 id="foreignAddressCountry"
                 value={formData.foreignAddressCountry}
                 onChange={handleChange}
+                required
                 className="mt-1 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               >
                 <option value="">Select a country</option>
