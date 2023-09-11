@@ -1,4 +1,7 @@
-name: Build and deploy React app to Azure Web App - immigrationform
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy Node.js app to Azure Web App - immigrationform
 
 on:
   push:
@@ -8,32 +11,27 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Set up Node.js version
+        uses: actions/setup-node@v1
         with:
-          node-version: '14' # Adjust the Node.js version as needed
+          node-version: '18.x'
 
-      - name: Install dependencies and build
+      - name: npm install, build, and test
         run: |
-          npm ci
-          npm run build
-
-      - name: Create a zip artifact
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/artifacts
-          zip -r $GITHUB_WORKSPACE/artifacts/react-app.zip build/*
-
-      - name: Upload the zip artifact
+          npm install
+          npm run build --if-present
+          npm run test --if-present
+      
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
-          name: react-app
-          path: $GITHUB_WORKSPACE/artifacts
+          name: node-app
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -46,15 +44,13 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v2
         with:
-          name: react-app
+          name: node-app
 
-      - name: Deploy to Azure Web App
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
+        id: deploy-to-webapp
         with:
-          app-name: 'immigrationform' # Replace with your Azure Web App name
+          app-name: 'immigrationform'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_223831B5CFC14473AE547CF04F2FF1EA }}
-          package: ${{ github.workspace }}/artifacts/react-app.zip # Specify the path to the downloaded zip artifact
-
-      - name: Clean up artifact
-        run: rm -rf ${{ github.workspace }}/artifacts/react-app.zip
+          package: .
