@@ -94,7 +94,7 @@ function Intakeform() {
         // Send the JSON data to the Express backend running on port 3001
         const response = await axios.post('http://localhost:3001/api/submitForm', formData);
         console.log(response.data); // You can log the response from the server
-        navigate('/review');
+        navigate(`/review?formData=${encodeURIComponent(JSON.stringify(formData))}`);
       } catch (error) {
         console.error('Error submitting form:', error);
       }
