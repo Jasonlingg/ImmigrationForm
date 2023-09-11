@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'; // Import useHistory
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
+import config from '../config.js';
 
 function Intakeform() {
     const navigate = useNavigate();
@@ -85,15 +86,15 @@ function Intakeform() {
     const handleSubmit = async (e) => {
       e.preventDefault();
       try {
-        const cleanedFormData = { ...formData }; // handledate being left empty
+        const cleanedFormData = { ...formData };
         for (const key in cleanedFormData) {
           if (cleanedFormData[key] === null) {
             delete cleanedFormData[key];
           }
         }
-        // Send the JSON data to the Express backend running on port 3001
-        const response = await axios.post('http://localhost:3001/api/submitForm', formData);
-        console.log(response.data); // You can log the response from the server
+        // Use the backend URL from the configuration based on the environment
+        const response = await axios.post(`${config[process.env.NODE_ENV].backendUrl}/submitForm`, formData);
+        console.log(response.data);
         navigate(`/review?formData=${encodeURIComponent(JSON.stringify(formData))}`);
       } catch (error) {
         console.error('Error submitting form:', error);
