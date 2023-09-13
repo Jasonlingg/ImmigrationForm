@@ -8,6 +8,7 @@ import config from '../config.js';
 
 function Intakeform() {
     const navigate = useNavigate();
+    const [countries, setCountries] = useState([]);
     const [formData, setFormData] = useState({
       alienRegistrationNumber: '',
       countryOfBirth: '',
@@ -43,7 +44,7 @@ function Intakeform() {
       validPassport: 'Yes',
     });
   
-    const [countries, setCountries] = useState([]);
+
   
     useEffect(() => {
       // Fetch country data when the component mounts
